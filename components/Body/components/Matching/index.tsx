@@ -47,16 +47,17 @@ const Matching: FC = () => {
       const regex = /\/u\/([^/]+)/
       const matchCurrentUrl = currentUrl?.match(regex)?.[1] || ""
 
-      const categoryResp: MainType.Response = await sendMessage(
-        "GET_CATEGORY_BY_PROJECT_NAME",
-        { name: matchCurrentUrl },
-        "background"
-      )
-
-      if (categoryResp.success) {
-        setCategoryData(categoryResp.data.data)
-        setCurrentKey(matchCurrentUrl)
-        setIsMatched(true)
+      if (matchCurrentUrl) {
+        const categoryResp: MainType.Response = await sendMessage(
+          "GET_CATEGORY_BY_PROJECT_NAME",
+          { name: matchCurrentUrl },
+          "background"
+        )
+        if (categoryResp.success) {
+          setCategoryData(categoryResp.data.data)
+          setCurrentKey(matchCurrentUrl)
+          setIsMatched(true)
+        }
       } else {
         setIsMatched(false)
         setCurrentKey("未命中")
@@ -147,6 +148,7 @@ const Matching: FC = () => {
               columns={categoryColumns}
               size="small"
               pagination={false}
+              rowKey={(record) => record.id}
             />
           </div>
         ) : (
@@ -156,6 +158,7 @@ const Matching: FC = () => {
               columns={urlColumns}
               size="small"
               pagination={false}
+              rowKey={(record) => record.id}
             />
           </div>
         )}
