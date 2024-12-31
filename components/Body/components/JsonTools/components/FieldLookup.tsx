@@ -306,10 +306,10 @@ const FieldLookup: React.FC = () => {
       title: "匹配路径",
       dataIndex: "path",
       key: "path",
-      width: "40%"
+      width: "50%"
     },
     {
-      title: "父级节点(仅高亮命中属性)",
+      title: "父级节点",
       dataIndex: "parentValue",
       key: "parentValue",
       render: (parent: any, record: SearchResult, rowIndex: number) => {
@@ -346,7 +346,7 @@ const FieldLookup: React.FC = () => {
   ]
 
   return (
-    <Card title="JSON 字段/值 查找工具（仅高亮命中属性）" size="small">
+    <Card title="JSON 字段/值 查找工具" size="small">
       <Form layout="vertical">
         {/* 1. 输入 JSON */}
         <Form.Item label="JSON 原文">
