@@ -1,6 +1,8 @@
 import { Segmented, Space } from "antd"
+import JsonTools from "components/Body/components/JsonTools"
 import { useState, type FC } from "react"
 
+import FontsAnalyze from "~components/Body/components/FontsAnalyze"
 import Matching from "~components/Body/components/Matching"
 import QrCode from "~components/Body/components/QrCode"
 import SpmTools from "~components/Body/components/SpmTools"
@@ -22,7 +24,7 @@ const Body: FC = () => {
           block
           value={component}
           onChange={handleTypeChange}
-          options={["工程/二维码", "埋点工具", "Whistle工具"]}
+          options={["工程/二维码", "埋点", "Whistle", "字体分析", "JSON"]}
           style={{ marginBottom: 8 }}
         />
         <div className={styles.body}>
@@ -33,8 +35,10 @@ const Body: FC = () => {
               <QrCode />
             </>
           )}
-          {component === "埋点工具" && <SpmTools />}
-          {component === "Whistle工具" && <WhistleChanger />}
+          {component === "埋点" && <SpmTools />}
+          {component === "Whistle" && <WhistleChanger />}
+          {component === "字体分析" && <FontsAnalyze />}
+          {component === "JSON" && <JsonTools />}
         </div>
       </div>
     </>

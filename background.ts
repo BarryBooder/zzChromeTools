@@ -114,3 +114,16 @@ onMessage("GET_CATEGORY_BY_PROJECT_NAME", async (params) => {
     }
   }
 })
+
+// 监听Content Script发来的消息
+onMessage("FETCH_DATA", async ({ data, sender }) => {
+  console.log("[Background] Received fetch data:", data, "from:", sender)
+  // 你可以做更多处理，比如存储、或者再发给Popup
+  // return 给 content-script 的结果
+  return { success: true }
+})
+
+onMessage("XHR_DATA", async ({ data, sender }) => {
+  console.log("[Background] Received XHR data:", data, "from:", sender)
+  return { success: true }
+})
