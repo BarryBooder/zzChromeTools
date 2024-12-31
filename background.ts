@@ -13,7 +13,7 @@ async function changeWhistleRule(params: any) {
   const config = {
     method: "post",
     maxBodyLength: Infinity,
-    url: `${MAIN_URL}/cgi-bin/rules/select`,
+    url: `http://127.0.0.1:8899/cgi-bin/rules/select`,
     headers: {
       Accept: "application/json, text/javascript, */*; q=0.01",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
