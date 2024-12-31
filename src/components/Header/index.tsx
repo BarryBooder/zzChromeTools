@@ -1,7 +1,7 @@
 import { Button } from "antd"
 import type { FC } from "react"
 
-import { openWindow } from "~components/Body/components/Matching/utils"
+import { openWindow } from "~src/components/Body/components/Matching/utils"
 
 import styles from "./index.module.css"
 

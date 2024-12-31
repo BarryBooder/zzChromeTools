@@ -2,7 +2,7 @@ import { Button, Card, Col, Form, Row, Select } from "antd"
 import React, { type FC } from "react"
 import { sendMessage } from "webext-bridge/popup"
 
-import { makeRule } from "~components/Body/components/WhistleChanger/utils"
+import { makeRule } from "~src/components/Body/components/WhistleChanger/utils"
 
 import styles from "./index.module.css"
 

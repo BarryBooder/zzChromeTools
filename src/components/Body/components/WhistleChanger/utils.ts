@@ -1,4 +1,4 @@
-import { envIpEnums } from "~components/Body/components/WhistleChanger/constant"
+import { envIpEnums } from "~src/components/Body/components/WhistleChanger/constant"
 
 export const makeRule = (
   front: string,

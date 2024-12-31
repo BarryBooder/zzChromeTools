@@ -1,6 +1,6 @@
 import type { TableColumnsType } from "antd"
 
-import { openWindow } from "~components/Body/components/Matching/utils"
+import { openWindow } from "~src/components/Body/components/Matching/utils"
 
 const makeFullUrl = (category: string, infoId: string) => {
   switch (category) {
