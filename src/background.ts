@@ -57,7 +57,7 @@ async function getCategoryByProjectName(params: any) {
 }
 
 /**
- *  监听消息：CHANGE_WHISTLE_RULE
+ *   监听消息：CHANGE_WHISTLE_RULE
  */
 onMessage("CHANGE_WHISTLE_RULE", async ({ data }) => {
   try {
@@ -115,15 +115,29 @@ onMessage("GET_CATEGORY_BY_PROJECT_NAME", async (params) => {
   }
 })
 
-// 监听Content Script发来的消息
-onMessage("FETCH_DATA", async ({ data, sender }) => {
-  console.log("[Background] Received fetch data:", data, "from:", sender)
-  // 你可以做更多处理，比如存储、或者再发给Popup
-  // return 给 content-script 的结果
-  return { success: true }
-})
+/**
+ * 在后台脚本里注册一个消息，用于创建独立弹窗
+ */
+onMessage("CREATE_FLOATING_WINDOW", async ({ data }) => {
+  // 你可以自定义弹窗的尺寸、位置等
+  const popupWidth = 500
+  const popupHeight = 600
 
-onMessage("XHR_DATA", async ({ data, sender }) => {
-  console.log("[Background] Received XHR data:", data, "from:", sender)
+  chrome.windows.create(
+    {
+      url: chrome.runtime.getURL("floating-window.html"), // 扩展内的页面
+      type: "popup",
+      width: popupWidth,
+      height: popupHeight,
+      // left/top 也可以指定定位
+      // left: 100,
+      // top: 100,
+      focused: true
+    },
+    (createdWindow) => {
+      console.log("独立浮窗已创建:", createdWindow)
+    }
+  )
+
   return { success: true }
 })
