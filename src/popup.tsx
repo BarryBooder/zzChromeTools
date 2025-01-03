@@ -1,5 +1,5 @@
-import Body from "~src/components/Body"
-import Header from "~src/components/Header"
+import Body from "./components/Body"
+import Header from "./components/Header"
 
 import styles from "../popup.module.css"
 

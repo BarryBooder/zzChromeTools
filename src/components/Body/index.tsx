@@ -1,12 +1,12 @@
 import { Segmented, Space } from "antd"
 import { useState, type FC } from "react"
 
-import FontsAnalyze from "~src/components/Body/components/FontsAnalyze"
-import JsonTools from "~src/components/Body/components/JsonTools"
-import Matching from "~src/components/Body/components/Matching"
-import QrCode from "~src/components/Body/components/QrCode"
-import SpmTools from "~src/components/Body/components/SpmTools"
-import WhistleChanger from "~src/components/Body/components/WhistleChanger"
+import FontsAnalyze from "./components/FontsAnalyze"
+import JsonTools from "./components/JsonTools"
+import Matching from "./components/Matching"
+import QrCode from "./components/QrCode"
+import SpmTools from "./components/SpmTools"
+import WhistleChanger from "./components/WhistleChanger"
 
 import styles from "./index.module.css"
 
