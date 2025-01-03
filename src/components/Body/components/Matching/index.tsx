@@ -6,7 +6,7 @@ import { sendMessage } from "webext-bridge/popup"
 import {
   categoryColumns,
   urlColumns
-} from "~src/components/Body/components/Matching/constant"
+} from "./constant"
 
 import styles from "./index.module.css"
 
