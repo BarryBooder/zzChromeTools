@@ -1,7 +1,7 @@
 {
   "name": "zz-chrome-tools-for-react",
   "displayName": "Zz chorme tools for react",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "zzChromeTools",
   "author": "BarryBooder",
   "scripts": {
@@ -14,9 +14,11 @@
     "ajax-hook": "^3.0.3",
     "antd": "^5.22.5",
     "axios": "^1.7.9",
+    "dayjs": "^1.11.13",
     "plasmo": "0.89.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "uuid": "^11.0.4",
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
