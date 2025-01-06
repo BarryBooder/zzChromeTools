@@ -1,19 +1,21 @@
-// src/contents/mark-p-antd-panel.tsx
-
-import { Table } from "antd"
+import { Button, Table } from "antd"
+import type { ColumnFilterItem } from "antd/es/table/interface"
+import dayjs from "dayjs"
 import type { PlasmoCSConfig } from "plasmo"
 import React, { useEffect, useState } from "react"
 import { createRoot } from "react-dom/client"
+import { v4 } from "uuid"
 
 // 1) Plasmo 配置
 export const config: PlasmoCSConfig = {
-  matches: ["<all_urls>"], // 或者只匹配特定域名
-  run_at: "document_start", // 最早阶段
-  world: "MAIN" // 主世界可 Monkey Patch
+  matches: ["<all_urls>"],
+  run_at: "document_start",
+  world: "MAIN"
 }
 
 /** 定义我们在Table里要展示的字段 */
 interface PingRecord {
+  id: string
   /** 拦截时间 */
   time: string
   /** data 中解析到的 pagetype */
@@ -29,11 +31,34 @@ interface PingRecord {
 }
 
 /** 我们的主组件：拦截并显示 mark-p 请求 */
-function MarkPPanel() {
+export default function MarkPPanel() {
   const [rows, setRows] = useState<PingRecord[]>([])
+  const [isShowPanel, setIsShowPanel] = useState(false)
+  const [sectionIdFilter, setSectionIdFilter] = useState<ColumnFilterItem[]>([])
+  const [isBodyReady, setIsBodyReady] = useState(false)
 
   useEffect(() => {
-    // ============ 在 useEffect 里完成 Monkey Patch ============
+    if (document?.body) {
+      setIsBodyReady(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    // 全局按键切换面板展示
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 例如用 Ctrl + Shift + M 作为快捷键
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "m") {
+        setIsShowPanel((prev) => !prev)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [])
+
+  useEffect(() => {
     const originalSendBeacon = navigator.sendBeacon
 
     navigator.sendBeacon = function (url: string, data?: BodyInit) {
@@ -53,7 +78,8 @@ function MarkPPanel() {
         // 从埋点数据里解构想展示的字段
         // 如果其中 backup 可能为空，需要写 ? 或 ||
         const newRecord: PingRecord = {
-          time: new Date().toLocaleString(),
+          id: v4(),
+          time: dayjs().format("HH:mm:ss"),
           pagetype: parsedBody?.pagetype || "",
           actiontype: parsedBody?.actiontype || "",
           sectionId: parsedBody?.backup?.sectionId || "",
@@ -63,6 +89,20 @@ function MarkPPanel() {
 
         // 在顶部插入
         setRows((prev) => [newRecord, ...prev])
+        setSectionIdFilter((prev) => {
+          // 确保新值唯一
+          const updatedFilters = [
+            { text: newRecord.sectionId, value: newRecord.sectionId },
+            ...prev.filter(
+              (item) => Number(item.value) !== Number(newRecord.sectionId)
+            )
+          ]
+
+          // 排序
+          return updatedFilters.sort(
+            (a, b) => Number(a.value) - Number(b.value)
+          )
+        })
       }
 
       // 调用原生 sendBeacon
@@ -73,42 +113,63 @@ function MarkPPanel() {
   // =========== 定义 antd Table 的列 ===========
   const columns = [
     {
-      title: "时间",
-      dataIndex: "time",
-      key: "time",
-      width: 160
-    },
-    {
       title: "pagetype",
       dataIndex: "pagetype",
       key: "pagetype",
-      width: 120
+      filters: [
+        {
+          text: "Areaexposure",
+          value: "Areaexposure"
+        },
+        {
+          text: "explosureGoods",
+          value: "explosureGoods"
+        },
+        {
+          text: "ZHUANZHUANM",
+          value: "ZHUANZHUANM"
+        },
+        {
+          text: "ab_event",
+          value: "ab_event"
+        },
+        {
+          text: "zpmclick",
+          value: "zpmclick"
+        }
+      ],
+      onFilter: (value: string, record: PingRecord) =>
+        record.pagetype.indexOf(value as string) === 0
     },
     {
       title: "actiontype",
       dataIndex: "actiontype",
-      key: "actiontype",
-      width: 120
+      key: "actiontype"
     },
     {
       title: "sectionId",
       dataIndex: "sectionId",
       key: "sectionId",
-      width: 90
+      filters: sectionIdFilter || [],
+      onFilter: (value: string, record: PingRecord) => {
+        return parseInt(record.sectionId, 10) === Number(value)
+      }
     },
     {
       title: "sortId",
       dataIndex: "sortId",
-      key: "sortId",
-      width: 90
+      key: "sortId"
     },
     {
       title: "sortName",
       dataIndex: "sortName",
-      key: "sortName",
-      width: 120
+      key: "sortName"
     }
   ]
+
+  if (!isBodyReady) {
+    return null
+  }
 
   return (
     <div
@@ -116,17 +177,19 @@ function MarkPPanel() {
         position: "fixed",
         top: 0,
         right: 0,
-        zIndex: 999999,
+        zIndex: 999,
         maxHeight: "100vh",
         overflow: "auto",
         backgroundColor: "#fff",
-        border: "2px solid #333"
+        border: "2px solid #333",
+        maxWidth: "100%"
       }}>
       <Table
         columns={columns}
         dataSource={rows}
         pagination={false}
-        rowKey={(_, idx) => idx.toString()}
+        style={{ display: isShowPanel ? "block" : "none" }}
+        rowKey={(record) => record.id}
         size="small"
         scroll={{ y: 400 }}
       />
@@ -136,19 +199,33 @@ function MarkPPanel() {
 
 /** 2) 在当前脚本中，创建并挂载 React 根节点 */
 function initPanel() {
-  // 等 DOM 存在后再插入
-  if (!document.body) {
-    // 如果在非常早的时机(document_start) body还没出现,
-    // 可以稍等一下, 或者用MutationObserver.
-    setTimeout(initPanel, 50)
+  if (document.body) {
+    insertPanel()
     return
   }
 
-  // 创建一个容器插入到页面
+  const observer = new MutationObserver(() => {
+    if (document.body) {
+      observer.disconnect() // 停止观察
+      insertPanel()
+    }
+  })
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  })
+}
+
+function insertPanel() {
+  if (!document.body) {
+    console.error("document.body is null, unable to appendChild.")
+    return
+  }
+
   const rootDiv = document.createElement("div")
   document.body.appendChild(rootDiv)
 
-  // 使用 React 18 的 createRoot
   const root = createRoot(rootDiv)
   root.render(<MarkPPanel />)
 }

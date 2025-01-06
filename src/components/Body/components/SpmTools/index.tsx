@@ -10,11 +10,8 @@ const SpmTools: FC = () => {
   }
 
   return (
-    <div style={{ padding: 8, width: 300 }}>
-      <h3>Intercepted Requests</h3>
-      <div>
-        <button onClick={handleShowPanel}>显示拦截面板</button>
-      </div>
+    <div style={{ padding: 8 }}>
+      <h1>使用 Ctrl + Shift + M 来打开/关闭埋点面板</h1>
     </div>
   )
 }
