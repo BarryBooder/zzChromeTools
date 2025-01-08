@@ -36,7 +36,6 @@ window.addEventListener("message", (ev) => {
   }
 
   const { url, data } = ev.data
-  console.log("[MarkP] got beacon => url=", url, ", data=", data)
 
   // 解析 data
   let parsedBody: any

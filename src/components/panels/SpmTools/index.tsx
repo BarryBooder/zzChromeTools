@@ -8,7 +8,6 @@ import { createRoot } from "react-dom/client"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 // 你可以选择不同的主题样式，比如 "dark"、"tomorrow"、"coy" 等
 import { coy } from "react-syntax-highlighter/dist/esm/styles/prism"
-import { onMessage } from "webext-bridge/devtools"
 
 import { sendToBackground } from "@plasmohq/messaging"
 
@@ -27,6 +26,8 @@ const SpmToolsPanel = () => {
   const [sectionIdFilter, setSectionIdFilter] = useState<ColumnFilterItem[]>([])
   const [pageTypeFilter, setPageTypeFilter] = useState<ColumnFilterItem[]>([])
   const [isSpmMonitorOpen, setIsSpmMonitorOpen] = useState(false)
+  const [isInjectSpmScriptNextRefresh, setIsInjectSpmScriptNextRefresh] =
+    useState()
 
   const columns: ColumnsType<PingRecord> = [
     // { title: "Time", dataIndex: "time", key: "time" },
@@ -83,19 +84,6 @@ const SpmToolsPanel = () => {
   ]
 
   useEffect(() => {
-    chrome.devtools.inspectedWindow.eval(
-      "window.__is_spm_monitor_open__",
-      (result: boolean, isException) => {
-        if (isException) {
-          console.error("Error evaluating script:", isException)
-        } else {
-          setIsSpmMonitorOpen(result)
-        }
-      }
-    )
-  }, [records])
-
-  useEffect(() => {
     let intervalId: number
 
     function fetchRecords() {
@@ -125,6 +113,24 @@ const SpmToolsPanel = () => {
           )
         }
       })
+
+      sendToBackground<any>({
+        name: "get-base-config"
+      }).then((res) => {
+        setIsInjectSpmScriptNextRefresh(res.injectSpmScriptOnNextRefresh)
+      })
+
+      chrome.devtools.inspectedWindow.eval(
+        "window.__is_spm_monitor_open__",
+        (result: boolean, isException) => {
+          if (isException) {
+            console.error("Error evaluating script:", isException)
+          } else {
+            console.log("is_spm_monitor_open__:", result)
+            setIsSpmMonitorOpen(result)
+          }
+        }
+      )
     }
 
     // 先拉一次
@@ -163,7 +169,7 @@ const SpmToolsPanel = () => {
     }
   }
 
-  async function injectSendBeaconOverride() {
+  const injectSendBeaconOverride = async () => {
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true
@@ -194,6 +200,15 @@ const SpmToolsPanel = () => {
     }
   }
 
+  const setBaseConfigInjectSpmScriptOnNextRefresh = async () => {
+    sendToBackground({
+      name: "store-base-config",
+      body: {
+        injectSpmScriptOnNextRefresh: true
+      }
+    })
+  }
+
   return (
     <div>
       <div
@@ -203,6 +218,10 @@ const SpmToolsPanel = () => {
           alignItems: "center"
         }}>
         <h2>埋点检查工具</h2>
+        {isInjectSpmScriptNextRefresh && (
+          <div style={{ color: "red" }}>注意：将在下一次刷新就注入监控脚本</div>
+        )}
+
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {isSpmMonitorOpen ? (
             <small style={{ color: "green" }}>监控已开启</small>
@@ -214,6 +233,13 @@ const SpmToolsPanel = () => {
             type={"primary"}
             disabled={isSpmMonitorOpen}>
             开启监控
+          </Button>
+          <Button
+            onClick={setBaseConfigInjectSpmScriptOnNextRefresh}
+            type={"primary"}
+            disabled={isInjectSpmScriptNextRefresh}
+            danger>
+            在下一次页面刷新时注入脚本
           </Button>
           <Button onClick={clearData} disabled={!records.length}>
             清空数据

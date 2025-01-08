@@ -1,5 +1,5 @@
 export default {
   baseConfig: {
-    isSpmOpen: false
+    injectSpmScriptOnNextRefresh: false
   }
 }

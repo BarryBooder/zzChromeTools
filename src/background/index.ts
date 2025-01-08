@@ -1,6 +1,8 @@
 import axios from "axios"
 import { onMessage } from "webext-bridge/background"
 
+import baseConfig from "./configStore"
+
 const MAIN_URL = "http://10.238.52.99:3050"
 
 /**
@@ -57,8 +59,6 @@ async function getCategoryByProjectName(params: any) {
 }
 
 async function init() {
-  const injectedTabs = {}
-
   /**
    * 这段函数将被注入到“主世界”执行。
    * 只能写成纯函数形式，或外联文件：此处内联更简单。
@@ -75,6 +75,7 @@ async function init() {
       }
       return originalSendBeacon.apply(this, arguments)
     }
+    window.__is_spm_monitor_open__ = true
   }
 
   /**
@@ -110,22 +111,16 @@ async function init() {
 
     // 如果是进入 loading 状态 且是我们目标站点
     if (changeInfo.status === "loading" && isTargetSite) {
-      // 如果还没注入，则注入
-      if (!injectedTabs[tabId]) {
-        injectedTabs[tabId] = true
+      console.log("[BG] Tab updated =>", tabId, new Date().getTime())
+      console.log("rrr", baseConfig.baseConfig)
+      if (baseConfig.baseConfig.injectSpmScriptOnNextRefresh) {
         try {
           await injectSendBeaconOverride(tabId)
-        } catch (err) {
-          console.error("[BG] Failed to inject script =>", err)
+          baseConfig.baseConfig.injectSpmScriptOnNextRefresh = false
+        } catch (e) {
+          console.log(e)
         }
       }
-    }
-
-    // 如果是 complete 状态，则把这个 tab 的标记重置
-    // 这样下次再刷新还能重新注入
-    if (changeInfo.status === "complete") {
-      // 无论是不是 zhuanzhuan.com，先删掉都行
-      delete injectedTabs[tabId]
     }
   })
 
@@ -141,6 +136,7 @@ async function init() {
 
   console.log("[BG] Service worker (MV3) loaded!")
 }
+init()
 
 /**
  *   监听消息：CHANGE_WHISTLE_RULE
