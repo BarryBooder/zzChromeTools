@@ -56,6 +56,92 @@ async function getCategoryByProjectName(params: any) {
   return result.data
 }
 
+async function init() {
+  const injectedTabs = {}
+
+  /**
+   * 这段函数将被注入到“主世界”执行。
+   * 只能写成纯函数形式，或外联文件：此处内联更简单。
+   */
+  function overrideSendBeaconInMain() {
+    const originalSendBeacon = navigator.sendBeacon
+    navigator.sendBeacon = function (url, data) {
+      if (
+        typeof url === "string" &&
+        url.includes("lego.zhuanzhuan.com/page/mark-p")
+      ) {
+        // 把埋点请求的url、data通过window.postMessage抛给页面
+        window.postMessage({ source: "my-ext-beacon", url, data }, "*")
+      }
+      return originalSendBeacon.apply(this, arguments)
+    }
+  }
+
+  /**
+   * 注入脚本到指定 tab 的主世界
+   */
+  async function injectSendBeaconOverride(tabId: number) {
+    console.log(
+      "[BG] Injecting overrideSendBeaconInMain into tab =>",
+      tabId,
+      new Date().getTime()
+    )
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        world: "MAIN", // 主世界
+        func: overrideSendBeaconInMain
+      })
+    } catch (err) {
+      console.error("[BG] Failed to inject script =>", err)
+    }
+  }
+
+  // ================ 监听 tab 更新/激活，注入脚本 ================
+
+  // 1) 当 tab 完整加载完成时
+  // ================ 监听 tab 更新/激活，注入脚本 ================
+  chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    // 如果没有 URL，直接跳过
+    if (!tab.url) return
+
+    // 只针对特定站点，比如包含 zhuanzhuan.com
+    const isTargetSite = tab.url.includes("zhuanzhuan.com")
+
+    // 如果是进入 loading 状态 且是我们目标站点
+    if (changeInfo.status === "loading" && isTargetSite) {
+      // 如果还没注入，则注入
+      if (!injectedTabs[tabId]) {
+        injectedTabs[tabId] = true
+        try {
+          await injectSendBeaconOverride(tabId)
+        } catch (err) {
+          console.error("[BG] Failed to inject script =>", err)
+        }
+      }
+    }
+
+    // 如果是 complete 状态，则把这个 tab 的标记重置
+    // 这样下次再刷新还能重新注入
+    if (changeInfo.status === "complete") {
+      // 无论是不是 zhuanzhuan.com，先删掉都行
+      delete injectedTabs[tabId]
+    }
+  })
+
+  // 2) 当切换 tab 时
+  // chrome.tabs.onActivated.addListener((activeInfo) => {
+  //   injectSendBeaconOverride(activeInfo.tabId)
+  // })
+
+  // 3) 可选：监听安装/更新等事件
+  chrome.runtime.onInstalled.addListener(() => {
+    console.log("[BG] Extension installed")
+  })
+
+  console.log("[BG] Service worker (MV3) loaded!")
+}
+
 /**
  *   监听消息：CHANGE_WHISTLE_RULE
  */
