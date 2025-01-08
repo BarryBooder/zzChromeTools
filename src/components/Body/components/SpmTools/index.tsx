@@ -1,11 +1,9 @@
-import { Button, Table, Tag } from "antd"
-import { useEffect, useState, type FC } from "react"
-import { onMessage, sendMessage } from "webext-bridge/popup"
+import { type FC } from "react"
 
 const SpmTools: FC = () => {
   return (
     <div style={{ padding: 8 }}>
-      <h1>使用 Ctrl + Shift + M 来打开/关闭埋点面板</h1>
+      <h1>使用控制台的 zzChrome工具 查看</h1>
     </div>
   )
 }
