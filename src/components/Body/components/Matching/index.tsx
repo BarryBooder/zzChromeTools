@@ -3,11 +3,7 @@ import { Button, Card, Form, Input, message, Segmented, Table } from "antd"
 import { useEffect, useState, type FC } from "react"
 import { sendMessage } from "webext-bridge/popup"
 
-import {
-  categoryColumns,
-  urlColumns
-} from "./constant"
-
+import { categoryColumns, urlColumns } from "./constant"
 import styles from "./index.module.css"
 
 const Matching: FC = () => {

@@ -1,10 +1,15 @@
 import { Button, Table } from "antd"
 import type { ColumnFilterItem } from "antd/es/table/interface"
 import dayjs from "dayjs"
-import type { PlasmoCSConfig } from "plasmo"
+import type {
+  PlasmoCSConfig,
+  PlasmoGetInlineAnchor,
+  PlasmoGetRootContainer
+} from "plasmo"
 import React, { useEffect, useState } from "react"
 import { createRoot } from "react-dom/client"
 import { v4 } from "uuid"
+import { sendMessage } from "webext-bridge/content-script"
 
 // 1) Plasmo 配置
 export const config: PlasmoCSConfig = {
@@ -12,6 +17,8 @@ export const config: PlasmoCSConfig = {
   run_at: "document_start",
   world: "MAIN"
 }
+
+export const getRootContainer = () => document.querySelector("body")
 
 /** 定义我们在Table里要展示的字段 */
 interface PingRecord {
@@ -42,6 +49,8 @@ export default function MarkPPanel() {
       setIsBodyReady(true)
     }
   }, [])
+
+  sendMessage("qqq", "", "background")
 
   useEffect(() => {
     // 全局按键切换面板展示
