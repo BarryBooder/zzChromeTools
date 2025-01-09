@@ -1,5 +1,5 @@
 // components/panels/SpmTools/index.tsx
-import { Button, Table } from "antd"
+import { Button, message, Table } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import type { ColumnFilterItem } from "antd/es/table/interface"
 import React, { useEffect, useState } from "react"
@@ -28,6 +28,25 @@ const SpmToolsPanel = () => {
   const [isSpmMonitorOpen, setIsSpmMonitorOpen] = useState(false)
   const [isInjectSpmScriptNextRefresh, setIsInjectSpmScriptNextRefresh] =
     useState()
+  const [tab, setTab] = useState<chrome.tabs.Tab>()
+  const [isZzTab, setIsZzTab] = useState(false)
+
+  const getTab = async () => {
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true
+    })
+    return tab
+  }
+
+  useEffect(() => {
+    getTab().then((tab) => {
+      setTab(tab)
+      if (tab.url.includes("zhuanzhuan.com")) {
+        setIsZzTab(true)
+      }
+    })
+  }, [])
 
   const columns: ColumnsType<PingRecord> = [
     // { title: "Time", dataIndex: "time", key: "time" },
@@ -136,10 +155,9 @@ const SpmToolsPanel = () => {
     // 先拉一次
     fetchRecords()
 
-    // 每隔 2 秒再拉一次
     intervalId = window.setInterval(() => {
       fetchRecords()
-    }, 1500)
+    }, 800)
 
     // 组件卸载时清理定时器
     return () => {
@@ -170,15 +188,16 @@ const SpmToolsPanel = () => {
   }
 
   const injectSendBeaconOverride = async () => {
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    })
     console.log(
       "[BG] Injecting overrideSendBeaconInMain into tab =>",
       tab.id,
+      isZzTab,
       new Date().getTime()
     )
+    if (!isZzTab) {
+      message.warning("非 *.zhuanzhaun.com/* 页面，注入已取消")
+      return
+    }
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id as number },
@@ -218,6 +237,11 @@ const SpmToolsPanel = () => {
           alignItems: "center"
         }}>
         <h2>埋点检查工具</h2>
+        {!isZzTab && (
+          <div style={{ color: "red" }}>
+            非 *.zhuanzhuan.com/* 页面，工具未启用
+          </div>
+        )}
         {isInjectSpmScriptNextRefresh && (
           <div style={{ color: "red" }}>注意：将在下一次刷新就注入监控脚本</div>
         )}
@@ -231,13 +255,13 @@ const SpmToolsPanel = () => {
           <Button
             onClick={injectSendBeaconOverride}
             type={"primary"}
-            disabled={isSpmMonitorOpen}>
+            disabled={isSpmMonitorOpen || !isZzTab}>
             开启监控
           </Button>
           <Button
             onClick={setBaseConfigInjectSpmScriptOnNextRefresh}
             type={"primary"}
-            disabled={isInjectSpmScriptNextRefresh}
+            disabled={isInjectSpmScriptNextRefresh || !isZzTab}
             danger>
             在下一次页面刷新时注入脚本
           </Button>
