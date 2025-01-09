@@ -145,7 +145,6 @@ const SpmToolsPanel = () => {
           if (isException) {
             console.error("Error evaluating script:", isException)
           } else {
-            console.log("is_spm_monitor_open__:", result)
             setIsSpmMonitorOpen(result)
           }
         }
