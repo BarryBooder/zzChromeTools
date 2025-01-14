@@ -1,6 +1,10 @@
 import axios from "axios"
 import { onMessage } from "webext-bridge/background"
 
+import { sendToBackground } from "@plasmohq/messaging"
+
+import { pingRecords } from "~background/pingRecord"
+
 import baseConfig from "./configStore"
 
 const MAIN_URL = "http://10.238.52.99:3050"
@@ -113,12 +117,24 @@ async function init() {
     if (changeInfo.status === "loading" && isTargetSite) {
       console.log("[BG] Tab updated =>", tabId, new Date().getTime())
       console.log("rrr", baseConfig.baseConfig)
-      if (baseConfig.baseConfig.injectSpmScriptOnNextRefresh) {
+      if (baseConfig.baseConfig.automaticallyEmpty) {
+        pingRecords.splice(0, pingRecords.length)
+      }
+      if (baseConfig.baseConfig.alwaysInjectedOnRefresh) {
         try {
           await injectSendBeaconOverride(tabId)
           baseConfig.baseConfig.injectSpmScriptOnNextRefresh = false
         } catch (e) {
           console.log(e)
+        }
+      } else {
+        if (baseConfig.baseConfig.injectSpmScriptOnNextRefresh) {
+          try {
+            await injectSendBeaconOverride(tabId)
+            baseConfig.baseConfig.injectSpmScriptOnNextRefresh = false
+          } catch (e) {
+            console.log(e)
+          }
         }
       }
     }
@@ -136,6 +152,7 @@ async function init() {
 
   console.log("[BG] Service worker (MV3) loaded!")
 }
+
 init()
 
 /**

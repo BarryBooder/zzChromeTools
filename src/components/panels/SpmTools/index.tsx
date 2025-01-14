@@ -1,5 +1,5 @@
 // components/panels/SpmTools/index.tsx
-import { Button, message, Table } from "antd"
+import { Button, Checkbox, message, Radio, Table } from "antd"
 import type { ColumnsType } from "antd/es/table"
 import type { ColumnFilterItem } from "antd/es/table/interface"
 import React, { useEffect, useState } from "react"
@@ -30,6 +30,9 @@ const SpmToolsPanel = () => {
     useState()
   const [tab, setTab] = useState<chrome.tabs.Tab>()
   const [isZzTab, setIsZzTab] = useState(false)
+  const [isAlwaysInjectedOnRefresh, setIsAlwaysInjectedOnRefresh] =
+    useState(false)
+  const [isAutomaticallyEmpty, setIsAutomaticallyEmpty] = useState(false)
 
   const getTab = async () => {
     const [tab] = await chrome.tabs.query({
@@ -136,7 +139,10 @@ const SpmToolsPanel = () => {
       sendToBackground<any>({
         name: "get-base-config"
       }).then((res) => {
+        console.log("get-base-config", res)
         setIsInjectSpmScriptNextRefresh(res.injectSpmScriptOnNextRefresh)
+        setIsAlwaysInjectedOnRefresh(res.alwaysInjectedOnRefresh)
+        setIsAutomaticallyEmpty(res.automaticallyEmpty)
       })
 
       chrome.devtools.inspectedWindow.eval(
@@ -163,6 +169,24 @@ const SpmToolsPanel = () => {
       clearInterval(intervalId)
     }
   }, [])
+
+  useEffect(() => {
+    sendToBackground({
+      name: "store-base-config",
+      body: {
+        alwaysInjectedOnRefresh: isAlwaysInjectedOnRefresh
+      }
+    })
+  }, [isAlwaysInjectedOnRefresh])
+
+  useEffect(() => {
+    sendToBackground({
+      name: "store-base-config",
+      body: {
+        automaticallyEmpty: isAutomaticallyEmpty
+      }
+    })
+  }, [isAutomaticallyEmpty])
 
   const clearData = async () => {
     // 清空数据
@@ -257,16 +281,34 @@ const SpmToolsPanel = () => {
             disabled={isSpmMonitorOpen || !isZzTab}>
             开启监控
           </Button>
+          <Checkbox
+            checked={isAlwaysInjectedOnRefresh}
+            onClick={(e) => {
+              setIsAlwaysInjectedOnRefresh(!isAlwaysInjectedOnRefresh)
+            }}>
+            始终
+          </Checkbox>
           <Button
             onClick={setBaseConfigInjectSpmScriptOnNextRefresh}
             type={"primary"}
-            disabled={isInjectSpmScriptNextRefresh || !isZzTab}
+            disabled={
+              isInjectSpmScriptNextRefresh ||
+              !isZzTab ||
+              isAlwaysInjectedOnRefresh
+            }
             danger>
-            在下一次页面刷新时注入脚本
+            下一次刷新时注入
           </Button>
           <Button onClick={clearData} disabled={!records.length}>
             清空数据
           </Button>
+          <Checkbox
+            checked={isAutomaticallyEmpty}
+            onClick={(e) => {
+              setIsAutomaticallyEmpty(!isAutomaticallyEmpty)
+            }}>
+            自动
+          </Checkbox>
         </div>
       </div>
       <Table
