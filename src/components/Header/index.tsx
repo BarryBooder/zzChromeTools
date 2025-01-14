@@ -5,6 +5,7 @@ import { openWindow } from "../Body/components/Matching/utils"
 import styles from "./index.module.css"
 
 const updateLog = `
+2025.01.14（V1.0.5）：埋点工具新增始终在页面刷新时注入脚本和刷新时自动清空监控数据的功能
 2025.01.09（V1.0.4）：埋点监控工具提供筛选功能，并可以在页面加载前注入脚本，实现全埋点拦截
 2025.01.08（V1.0.3）：将埋点监控工具移至控制台，调整注入方式，二维码工具提供增大/减小尺寸，以方便密集二维码加大展示
 2025.01.06（V1.0.2）：新增埋点监控工具，可以快捷查看埋点拦截，方便前端进行埋点验证
@@ -26,7 +27,7 @@ const Header: FC = () => {
           <div onClick={() => alert(updateLog)} style={{ cursor: "pointer" }}>
             更新日志
           </div>
-          <div className={styles.version}>V1.0.4</div>
+          <div className={styles.version}>V1.0.5</div>
         </div>
       </div>
     </>
