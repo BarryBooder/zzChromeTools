@@ -35,7 +35,6 @@
     "webext-bridge": "^6.0.1"
   },
   "manifest": {
-    "contentScriptCSP": "script-src 'self' 'unsafe-inline'; object-src 'self';",
     "host_permissions": [
       "https://*/*",
       "http://127.0.0.1:8899/*",

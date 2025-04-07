@@ -7,6 +7,7 @@ import Matching from "./components/Matching"
 import QrCode from "./components/QrCode"
 import SpmTools from "./components/SpmTools"
 import WhistleChanger from "./components/WhistleChanger"
+import AlwaysOnline from "./components/AlwaysOnline"
 
 import styles from "./index.module.css"
 
@@ -24,7 +25,7 @@ const Body: FC = () => {
           block
           value={component}
           onChange={handleTypeChange}
-          options={["工程/二维码", "埋点", "Whistle", "字体分析", "JSON"]}
+          options={["工程/二维码", "Whistle", "字体分析", "JSON", "总是在线"]}
           style={{ marginBottom: 8 }}
         />
         <div className={styles.body}>
@@ -35,10 +36,11 @@ const Body: FC = () => {
               <QrCode />
             </>
           )}
-          {component === "埋点" && <SpmTools />}
+          {/* {component === "埋点" && <SpmTools />} */}
           {component === "Whistle" && <WhistleChanger />}
           {component === "字体分析" && <FontsAnalyze />}
           {component === "JSON" && <JsonTools />}
+          {component === "总是在线" && <AlwaysOnline />}
         </div>
       </div>
     </>

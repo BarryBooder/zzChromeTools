@@ -1,13 +1,29 @@
 import axios from "axios"
 import { onMessage } from "webext-bridge/background"
 
-import { sendToBackground } from "@plasmohq/messaging"
-
 import { pingRecords } from "~background/pingRecord"
 
 import baseConfig from "./configStore"
 
-const MAIN_URL = "http://10.238.52.99:3050"
+async function waitForConfig() {
+  return new Promise((resolve, reject) => {
+    // 假设你可以监听某个条件来确保 serviceMainUrl 已经被设置
+    const checkConfigInterval = setInterval(() => {
+      if (baseConfig.baseConfig.serviceMainUrl) {
+        clearInterval(checkConfigInterval) // 清除定时器
+        resolve(baseConfig.baseConfig.serviceMainUrl) // 配置已加载
+      }
+    }, 100) // 每100ms检查一次配置
+  })
+}
+
+async function getMainUrl() {
+  await waitForConfig() // 等待配置加载完成
+  console.log("配置已加载:", baseConfig.baseConfig.serviceMainUrl)
+  return baseConfig.baseConfig.serviceMainUrl
+}
+
+console.log("baseConfig", baseConfig.baseConfig, 123, getMainUrl())
 
 /**
  * 发送请求给 Whistle
@@ -23,7 +39,7 @@ async function changeWhistleRule(params: any) {
     headers: {
       Accept: "application/json, text/javascript, */*; q=0.01",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      Origin: `${MAIN_URL}`,
+      Origin: `${await getMainUrl()}`,
       "User-Agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
     },
@@ -38,7 +54,9 @@ async function changeWhistleRule(params: any) {
  * 获取 Project 列表
  */
 async function getProjectList() {
-  const getProjectListResult = await axios.get(`${MAIN_URL}/api/project`)
+  const getProjectListResult = await axios.get(
+    `${await getMainUrl()}/api/project`
+  )
   return getProjectListResult.data
 }
 
@@ -47,7 +65,7 @@ async function getProjectList() {
  */
 async function getCategoryByProjectId(params: any) {
   const result = await axios.get(
-    `${MAIN_URL}/api/category/byProjectId/${params.id}`
+    `${await getMainUrl()}/api/category/byProjectId/${params.id}`
   )
   return result.data
 }
@@ -57,7 +75,7 @@ async function getCategoryByProjectId(params: any) {
  */
 async function getCategoryByProjectName(params: any) {
   const result = await axios.get(
-    `${MAIN_URL}/api/category/byProjectName/?name=${params.data.name}`
+    `${await getMainUrl()}/api/category/byProjectName/?name=${params.data.name}`
   )
   return result.data
 }

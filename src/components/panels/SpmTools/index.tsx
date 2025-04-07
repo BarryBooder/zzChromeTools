@@ -139,7 +139,6 @@ const SpmToolsPanel = () => {
       sendToBackground<any>({
         name: "get-base-config"
       }).then((res) => {
-        console.log("get-base-config", res)
         setIsInjectSpmScriptNextRefresh(res.injectSpmScriptOnNextRefresh)
         setIsAlwaysInjectedOnRefresh(res.alwaysInjectedOnRefresh)
         setIsAutomaticallyEmpty(res.automaticallyEmpty)
@@ -251,6 +250,16 @@ const SpmToolsPanel = () => {
     })
   }
 
+  // 鼠标悬停的操作
+  // const handleRowHover = (record) => {
+  //   if (record) console.log(record.sectionId)
+  // }
+  //
+  // // 鼠标移开时的操作
+  // const handleRowLeave = (record) => {
+  //   // console.log(`离开了：${record.name}`)
+  // }
+
   return (
     <div>
       <div
@@ -317,6 +326,12 @@ const SpmToolsPanel = () => {
         rowKey="id"
         size="small"
         pagination={false}
+        // onRow={(record) => {
+        //   return {
+        //     onMouseEnter: () => handleRowHover(record), // 鼠标悬停
+        //     onMouseLeave: () => handleRowLeave(record) // 鼠标移开
+        //   }
+        // }}
       />
     </div>
   )
